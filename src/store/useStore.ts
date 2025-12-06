@@ -21,6 +21,10 @@ interface AppState {
   cameraMode: CameraMode;
   /** Mobile: Whether the control panel is expanded */
   isControlsExpanded: boolean;
+  /** Galactic motion mode - Sun moves forward, planets form helical paths */
+  galacticMotion: boolean;
+  /** Background music enabled */
+  musicEnabled: boolean;
 
   selectBody: (body: CelestialBody | null) => void;
   setTimeScale: (scale: number) => void;
@@ -33,17 +37,21 @@ interface AppState {
   toggleCameraMode: () => void;
   toggleControlsExpanded: () => void;
   setControlsExpanded: (expanded: boolean) => void;
+  toggleGalacticMotion: () => void;
+  toggleMusic: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
   selectedBody: null,
-  timeScale: 1,
+  timeScale: 20,
   isPlaying: true,
   showOrbits: true,
   showLabels: true,
   showAsteroids: true,
   cameraMode: "orbit",
   isControlsExpanded: false,
+  galacticMotion: false,
+  musicEnabled: true,
 
   selectBody: (body) => set({ selectedBody: body }),
   setTimeScale: (scale) => set({ timeScale: scale }),
@@ -61,4 +69,7 @@ export const useStore = create<AppState>((set) => ({
   toggleControlsExpanded: () =>
     set((state) => ({ isControlsExpanded: !state.isControlsExpanded })),
   setControlsExpanded: (expanded) => set({ isControlsExpanded: expanded }),
+  toggleGalacticMotion: () =>
+    set((state) => ({ galacticMotion: !state.galacticMotion })),
+  toggleMusic: () => set((state) => ({ musicEnabled: !state.musicEnabled })),
 }));

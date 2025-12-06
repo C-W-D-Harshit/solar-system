@@ -1,13 +1,17 @@
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, Group, DoubleSide, RepeatWrapping } from "three";
+import { Mesh, Group, DoubleSide, RepeatWrapping, Vector3 } from "three";
 import { Html, useTexture } from "@react-three/drei";
 import type { CelestialBody } from "../../types";
 import { useStore } from "../../store/useStore";
 
 interface PlanetProps {
+  /** Celestial body data for the planet */
   data: CelestialBody;
+  /** Reference to current simulation time */
   timeRef: React.MutableRefObject<number>;
+  /** Reference to the Sun's current world position (for galactic motion) */
+  sunPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /**
@@ -93,8 +97,12 @@ function SimpleRing({ radius, ringColor }: SimpleRingProps) {
  * - Reduced ring segments (32 instead of 64)
  * - MeshBasicMaterial for rings (no lighting calculations)
  * - useFrame priority for consistent update order
+ * 
+ * Galactic Motion:
+ * - Planet follows Sun's position while maintaining orbit
+ * - Creates helical path as Sun moves forward
  */
-export function Planet({ data, timeRef }: PlanetProps) {
+export function Planet({ data, timeRef, sunPositionRef }: PlanetProps) {
   const meshRef = useRef<Mesh>(null);
   const groupRef = useRef<Group>(null);
   
@@ -108,14 +116,42 @@ export function Planet({ data, timeRef }: PlanetProps) {
   /** Calculate geometry segments once based on planet size */
   const segments = useMemo(() => getGeometrySegments(data.radius), [data.radius]);
 
+  /** Get galactic motion state for reactive scaling */
+  const galacticMotion = useStore((state) => state.galacticMotion);
+  const timeScale = useStore((state) => state.timeScale);
+
+  /** Scale planets in galactic mode based on speed for visibility */
+  /** More conservative scaling: at 20x = ~2x size, at 50x = ~2.8x size */
+  const planetScale = galacticMotion ? 1 + Math.pow(timeScale, 0.4) * 0.3 : 1;
+
   useFrame((_state, delta) => {
     const time = timeRef.current;
     const angle = time * data.orbitSpeed;
-    const x = Math.cos(angle) * data.distance;
-    const z = Math.sin(angle) * data.distance;
+
+    const galacticMotion = useStore.getState().galacticMotion;
+    const heightOffset = data.inclination ?? 0;
+
+    let orbitalX, orbitalY, orbitalZ;
+
+    if (galacticMotion) {
+      /** In galactic mode: orbit in X-Y plane at height offset, Z stays at 0 */
+      orbitalX = Math.cos(angle) * data.distance;
+      orbitalY = Math.sin(angle) * data.distance + heightOffset;
+      orbitalZ = 0;
+    } else {
+      /** In normal mode: orbit in X-Z plane at Y=0 */
+      orbitalX = Math.cos(angle) * data.distance;
+      orbitalY = 0;
+      orbitalZ = Math.sin(angle) * data.distance;
+    }
+
+    /** Add Sun's position for galactic motion (creates helical path) */
+    const worldX = orbitalX + sunPositionRef.current.x;
+    const worldY = orbitalY + sunPositionRef.current.y;
+    const worldZ = orbitalZ + sunPositionRef.current.z;
 
     if (groupRef.current) {
-      groupRef.current.position.set(x, 0, z);
+      groupRef.current.position.set(worldX, worldY, worldZ);
     }
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * data.rotationSpeed * 20;
@@ -123,7 +159,7 @@ export function Planet({ data, timeRef }: PlanetProps) {
   });
 
   return (
-    <group ref={groupRef} position={[data.distance, 0, 0]}>
+    <group ref={groupRef} position={[data.distance, 0, 0]} scale={planetScale}>
       {/* Planet sphere with optimized geometry */}
       <mesh
         ref={meshRef}

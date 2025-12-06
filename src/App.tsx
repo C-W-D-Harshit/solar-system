@@ -1,6 +1,7 @@
 import { SceneCanvas } from "./components/SceneCanvas";
 import { SolarSystemScene } from "./components/solar/SolarSystemScene";
 import { Overlay } from "./components/ui/Overlay";
+import { BackgroundMusic } from "./components/BackgroundMusic";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <SolarSystemScene />
       </SceneCanvas>
       <Overlay />
+      <BackgroundMusic />
     </>
   );
 }
