@@ -28,7 +28,7 @@ const StarsBackground = memo(function StarsBackground() {
       <Stars
         radius={300}
         depth={60}
-        count={5000}
+        count={4000}
         factor={4}
         saturation={0}
         fade
@@ -41,15 +41,26 @@ const StarsBackground = memo(function StarsBackground() {
 /**
  * Main 3D canvas wrapper for the solar system scene
  * Contains camera setup, controls, lighting, and starfield background
+ * 
+ * WebGL Performance Optimizations:
+ * - powerPreference: "high-performance" - Forces discrete GPU on hybrid systems
+ * - logarithmicDepthBuffer: true - Better precision for large scale scenes
+ * - dpr capped at [1, 2] for performance scaling
  */
 export function SceneCanvas({ children }: SceneCanvasProps) {
   return (
     <div className="w-full h-screen bg-black relative">
       <Canvas
         camera={{ position: [0, 60, 120], fov: 45, near: 0.1, far: 20000 }}
-        shadows
         dpr={[1, 2]}
-        gl={{ antialias: true, alpha: false }}
+        gl={{
+          powerPreference: "high-performance",
+          antialias: true,
+          stencil: false,
+          depth: true,
+          logarithmicDepthBuffer: true,
+          alpha: false,
+        }}
       >
         <color attach="background" args={["#000005"]} />
 
@@ -66,6 +77,8 @@ export function SceneCanvas({ children }: SceneCanvasProps) {
           minDistance={10}
           maxDistance={1000}
           enablePan={true}
+          enableDamping={true}
+          dampingFactor={0.05}
         />
 
         <ambientLight intensity={0.1} />
