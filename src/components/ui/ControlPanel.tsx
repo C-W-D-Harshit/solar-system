@@ -9,6 +9,7 @@ import {
   Settings,
   ChevronDown,
   Rocket,
+  Music,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -35,6 +36,8 @@ export function ControlPanel() {
   const toggleCameraMode = useStore((state) => state.toggleCameraMode);
   const galacticMotion = useStore((state) => state.galacticMotion);
   const toggleGalacticMotion = useStore((state) => state.toggleGalacticMotion);
+  const musicEnabled = useStore((state) => state.musicEnabled);
+  const toggleMusic = useStore((state) => state.toggleMusic);
   const isControlsExpanded = useStore((state) => state.isControlsExpanded);
   const toggleControlsExpanded = useStore(
     (state) => state.toggleControlsExpanded
@@ -93,6 +96,12 @@ export function ControlPanel() {
                 onClick={toggleGalacticMotion}
                 icon={<Rocket size={20} />}
                 label="Galactic"
+              />
+              <MobileToggleButton
+                active={musicEnabled}
+                onClick={toggleMusic}
+                icon={<Music size={20} />}
+                label="Music"
               />
             </div>
 
@@ -268,6 +277,16 @@ export function ControlPanel() {
           title="Toggle Asteroid Belt"
         >
           <Hexagon size={20} />
+        </button>
+
+        <button
+          onClick={toggleMusic}
+          className={`transition-all hover:scale-110 ${
+            musicEnabled ? "text-blue-400" : "text-white/40"
+          }`}
+          title="Toggle Background Music"
+        >
+          <Music size={20} />
         </button>
       </div>
 
