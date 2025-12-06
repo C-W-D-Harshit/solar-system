@@ -176,8 +176,10 @@ export function AsteroidBelt({ timeRef, sunPositionRef }: AsteroidBeltProps) {
 
     /** Rotate around appropriate axis based on mode */
     if (galacticMotion) {
+      meshRef.current.rotation.y = 0; // Reset Y rotation
       meshRef.current.rotation.z = time * 0.01; // Rotate in X-Y plane
     } else {
+      meshRef.current.rotation.z = 0; // Reset Z rotation
       meshRef.current.rotation.y = time * 0.01; // Rotate in X-Z plane
     }
   });
