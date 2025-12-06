@@ -72,6 +72,7 @@ export function SceneCanvas({ children }: SceneCanvasProps) {
           <Preload all />
         </Suspense>
 
+        {/* OrbitControls with touch-optimized settings */}
         <OrbitControls
           makeDefault
           minDistance={10}
@@ -79,6 +80,18 @@ export function SceneCanvas({ children }: SceneCanvasProps) {
           enablePan={true}
           enableDamping={true}
           dampingFactor={0.05}
+          /* Touch controls:
+           * - One finger: rotate
+           * - Two fingers: zoom (pinch) and pan (drag)
+           */
+          touches={{
+            ONE: 1, // TOUCH.ROTATE
+            TWO: 2, // TOUCH.DOLLY_PAN (zoom + pan)
+          }}
+          /* Rotation speed adjustment for touch */
+          rotateSpeed={0.5}
+          /* Smoother zoom on mobile */
+          zoomSpeed={0.8}
         />
 
         <ambientLight intensity={0.1} />
