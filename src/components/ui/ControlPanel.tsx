@@ -8,6 +8,7 @@ import {
   MousePointer2,
   Settings,
   ChevronDown,
+  Rocket,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -32,6 +33,8 @@ export function ControlPanel() {
   const toggleAsteroids = useStore((state) => state.toggleAsteroids);
   const cameraMode = useStore((state) => state.cameraMode);
   const toggleCameraMode = useStore((state) => state.toggleCameraMode);
+  const galacticMotion = useStore((state) => state.galacticMotion);
+  const toggleGalacticMotion = useStore((state) => state.toggleGalacticMotion);
   const isControlsExpanded = useStore((state) => state.isControlsExpanded);
   const toggleControlsExpanded = useStore(
     (state) => state.toggleControlsExpanded
@@ -66,7 +69,7 @@ export function ControlPanel() {
             </div>
 
             {/* Toggle Options Grid */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <MobileToggleButton
                 active={showOrbits}
                 onClick={toggleOrbits}
@@ -84,6 +87,12 @@ export function ControlPanel() {
                 onClick={toggleAsteroids}
                 icon={<Hexagon size={20} />}
                 label="Asteroids"
+              />
+              <MobileToggleButton
+                active={galacticMotion}
+                onClick={toggleGalacticMotion}
+                icon={<Rocket size={20} />}
+                label="Galactic"
               />
             </div>
 
@@ -261,6 +270,28 @@ export function ControlPanel() {
           <Hexagon size={20} />
         </button>
       </div>
+
+      <div className="w-px h-8 bg-white/20" />
+
+      {/* Galactic Motion Toggle */}
+      <button
+        onClick={toggleGalacticMotion}
+        className={`transition-all hover:scale-110 flex items-center gap-2 px-3 py-1.5 rounded-full ${
+          galacticMotion
+            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+            : "bg-white/10 text-white/70 border border-white/10"
+        }`}
+        title={
+          galacticMotion
+            ? "Disable Galactic Motion"
+            : "Enable Galactic Motion - Sun moves forward, planets form helical paths"
+        }
+      >
+        <Rocket size={18} />
+        <span className="text-xs font-medium uppercase tracking-wider">
+          Galactic
+        </span>
+      </button>
     </div>
   );
 }

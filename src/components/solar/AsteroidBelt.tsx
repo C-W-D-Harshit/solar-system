@@ -5,12 +5,17 @@ import {
   Object3D, 
   CanvasTexture, 
   RepeatWrapping,
-  SRGBColorSpace 
+  SRGBColorSpace,
+  Vector3,
+  Group
 } from "three";
 import { useStore } from "../../store/useStore";
 
 interface AsteroidBeltProps {
+  /** Reference to current simulation time */
   timeRef: React.MutableRefObject<number>;
+  /** Reference to the Sun's current world position (for galactic motion) */
+  sunPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Number of asteroids in the belt - reduced for better performance */
@@ -80,11 +85,16 @@ function createAsteroidTexture(size: number = 128): CanvasTexture {
  * - Procedural texture generated once and shared
  * - Frustum culling enabled by default
  * - Reduced count from 3500 to 2500
+ * 
+ * Galactic Motion:
+ * - Asteroid belt follows Sun's position
+ * - Belt remains centered on Sun as it moves
  */
-export function AsteroidBelt({ timeRef }: AsteroidBeltProps) {
+export function AsteroidBelt({ timeRef, sunPositionRef }: AsteroidBeltProps) {
   /** Use selector to only subscribe to showAsteroids state */
   const showAsteroids = useStore((state) => state.showAsteroids);
   const meshRef = useRef<InstancedMesh>(null);
+  const groupRef = useRef<Group>(null);
   const dummy = useMemo(() => new Object3D(), []);
 
   /** Create procedural asteroid texture once */
@@ -145,8 +155,13 @@ export function AsteroidBelt({ timeRef }: AsteroidBeltProps) {
     }
   }, [asteroids, dummy]);
 
-  /** Rotate the entire belt slowly */
+  /** Rotate the entire belt slowly and follow Sun's position */
   useFrame(() => {
+    /** Update group position to follow Sun */
+    if (groupRef.current) {
+      groupRef.current.position.copy(sunPositionRef.current);
+    }
+    
     if (!meshRef.current || !showAsteroids) return;
     const time = timeRef.current;
     meshRef.current.rotation.y = time * 0.01;
@@ -155,20 +170,22 @@ export function AsteroidBelt({ timeRef }: AsteroidBeltProps) {
   if (!showAsteroids) return null;
 
   return (
-    <instancedMesh 
-      ref={meshRef} 
-      args={[undefined, undefined, ASTEROID_COUNT]}
-      frustumCulled
-    >
-      {/* Low-poly icosahedron (detail 0) for angular rocky appearance */}
-      <icosahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial
-        map={asteroidTexture}
-        color="#9a9a9a"
-        roughness={0.95}
-        metalness={0.05}
-        flatShading
-      />
-    </instancedMesh>
+    <group ref={groupRef}>
+      <instancedMesh 
+        ref={meshRef} 
+        args={[undefined, undefined, ASTEROID_COUNT]}
+        frustumCulled
+      >
+        {/* Low-poly icosahedron (detail 0) for angular rocky appearance */}
+        <icosahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial
+          map={asteroidTexture}
+          color="#9a9a9a"
+          roughness={0.95}
+          metalness={0.05}
+          flatShading
+        />
+      </instancedMesh>
+    </group>
   );
 }

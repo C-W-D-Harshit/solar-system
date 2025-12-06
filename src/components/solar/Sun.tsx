@@ -1,12 +1,15 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, AdditiveBlending, BackSide } from "three";
+import { Mesh, AdditiveBlending, BackSide, Vector3, Group } from "three";
 import { useTexture } from "@react-three/drei";
 import type { CelestialBody } from "../../types";
 import { useStore } from "../../store/useStore";
 
 interface SunProps {
+  /** Celestial body data for the Sun */
   data: CelestialBody;
+  /** Reference to the Sun's current world position (updated by parent) */
+  sunPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /**
@@ -17,9 +20,14 @@ interface SunProps {
  * - Reduced geometry segments (32 instead of 64)
  * - Additive blending for glow (GPU compositing)
  * - BackSide rendering for outer glow (avoids z-fighting)
+ * 
+ * Galactic Motion:
+ * - Position is controlled by sunPositionRef from parent
+ * - Moves forward along galactic direction when mode is enabled
  */
-export function Sun({ data }: SunProps) {
+export function Sun({ data, sunPositionRef }: SunProps) {
   const meshRef = useRef<Mesh>(null);
+  const groupRef = useRef<Group>(null);
   
   /** Select only the action function - stable reference, won't cause re-renders */
   const selectBody = useStore((state) => state.selectBody);
@@ -28,13 +36,19 @@ export function Sun({ data }: SunProps) {
   const texture = useTexture(data.textureUrl ?? "/textures/sun.jpg");
 
   useFrame((_state, delta) => {
+    /** Update group position to match sunPositionRef */
+    if (groupRef.current) {
+      groupRef.current.position.copy(sunPositionRef.current);
+    }
+    
+    /** Rotate the sun mesh */
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.05;
     }
   });
 
   return (
-    <group>
+    <group ref={groupRef}>
       {/* Main sun sphere with texture */}
       <mesh
         ref={meshRef}

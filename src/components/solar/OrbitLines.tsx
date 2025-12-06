@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
-import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineLoop } from "three";
+import { useFrame } from "@react-three/fiber";
+import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineLoop, Group, Vector3 } from "three";
 import { useStore } from "../../store/useStore";
 import { solarSystemData } from "../../data/solarSystem";
 
@@ -8,6 +9,11 @@ import { solarSystemData } from "../../data/solarSystem";
  * 64 provides smooth curves while being GPU-efficient
  */
 const ORBIT_SEGMENTS = 64;
+
+interface OrbitLinesProps {
+  /** Reference to the Sun's current world position (for galactic motion) */
+  sunPositionRef: React.MutableRefObject<Vector3>;
+}
 
 /**
  * Generate circle points for an orbit path
@@ -36,20 +42,24 @@ function generateOrbitVertices(radius: number, segments: number): Float32Array {
  * - Uses LineLoop instead of ringGeometry (much fewer triangles)
  * - Single shared material for all orbits
  * - Geometry is pre-computed and memoized
- * - Static - no per-frame updates needed
+ * 
+ * Galactic Motion:
+ * - Orbit lines follow Sun's position
+ * - Lines remain centered on Sun as it moves
  */
-export function OrbitLines() {
+export function OrbitLines({ sunPositionRef }: OrbitLinesProps) {
   const showOrbits = useStore((state) => state.showOrbits);
+  const groupRef = useRef<Group>(null);
   
   /** Shared material for all orbit lines - created once */
   const materialRef = useRef<LineBasicMaterial | null>(null);
   
   /** Pre-compute all orbit geometries */
   const orbits = useMemo(() => {
-    // Get only planets (not the sun)
+    /** Get only planets (not the sun) */
     const planets = solarSystemData.filter((body) => body.type === "planet");
     
-    // Create shared material if not exists
+    /** Create shared material if not exists */
     if (!materialRef.current) {
       materialRef.current = new LineBasicMaterial({
         color: 0xffffff,
@@ -72,10 +82,17 @@ export function OrbitLines() {
     });
   }, []);
 
+  /** Update orbit lines position to follow Sun */
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.position.copy(sunPositionRef.current);
+    }
+  });
+
   if (!showOrbits) return null;
 
   return (
-    <group>
+    <group ref={groupRef}>
       {orbits.map((orbit) => (
         <primitive
           key={orbit.id}

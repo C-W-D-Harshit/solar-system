@@ -4,7 +4,10 @@ import { useStore } from "../../store/useStore";
 import { useRef, useEffect, useCallback } from "react";
 
 interface CameraControllerProps {
+  /** Reference to current simulation time */
   timeRef: React.MutableRefObject<number>;
+  /** Reference to the Sun's current world position (for galactic motion) */
+  sunPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Keyboard state for tracking pressed keys */
@@ -22,8 +25,12 @@ interface KeyState {
  * CameraController handles both orbit and free camera modes
  * - Orbit mode: follows selected celestial bodies with OrbitControls
  * - Free mode: WASD movement, Space/Shift for vertical, mouse for look
+ * 
+ * Galactic Motion:
+ * - Camera follows Sun's position when galactic motion is enabled
+ * - Maintains proper tracking of celestial bodies as they move
  */
-export function CameraController({ timeRef }: CameraControllerProps) {
+export function CameraController({ timeRef, sunPositionRef }: CameraControllerProps) {
   /** Use individual selectors to prevent re-renders from unrelated state changes */
   const selectedBody = useStore((state) => state.selectedBody);
   const cameraMode = useStore((state) => state.cameraMode);
@@ -258,6 +265,7 @@ export function CameraController({ timeRef }: CameraControllerProps) {
 
   /**
    * Handle orbit camera movement - follows selected body or returns to center
+   * Includes Sun's position for galactic motion support
    */
   function handleOrbitCameraMovement(delta: number) {
     const orbitControls = controls as {
@@ -266,15 +274,20 @@ export function CameraController({ timeRef }: CameraControllerProps) {
     } | null;
 
     if (selectedBody) {
-      // Calculate current position of the selected body
+      /** Calculate current orbital position of the selected body */
       const time = timeRef.current;
       const angle = time * selectedBody.orbitSpeed;
-      const x = Math.cos(angle) * selectedBody.distance;
-      const z = Math.sin(angle) * selectedBody.distance;
+      const orbitalX = Math.cos(angle) * selectedBody.distance;
+      const orbitalZ = Math.sin(angle) * selectedBody.distance;
 
-      const targetPosition = new Vector3(x, 0, z);
+      /** Add Sun's position for galactic motion (creates proper tracking) */
+      const worldX = orbitalX + sunPositionRef.current.x;
+      const worldY = sunPositionRef.current.y;
+      const worldZ = orbitalZ + sunPositionRef.current.z;
 
-      // Smoothly move the controls target to the body's position
+      const targetPosition = new Vector3(worldX, worldY, worldZ);
+
+      /** Smoothly move the controls target to the body's position */
       const lerpFactor = 5 * delta;
       currentTarget.current.lerp(targetPosition, lerpFactor);
 
@@ -283,8 +296,8 @@ export function CameraController({ timeRef }: CameraControllerProps) {
         orbitControls.update();
       }
     } else {
-      // If nothing selected, drift back to center
-      const targetPosition = new Vector3(0, 0, 0);
+      /** If nothing selected, follow the Sun's position (galactic motion center) */
+      const targetPosition = sunPositionRef.current.clone();
       const lerpFactor = 2 * delta;
       currentTarget.current.lerp(targetPosition, lerpFactor);
 

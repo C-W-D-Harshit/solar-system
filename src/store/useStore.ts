@@ -21,6 +21,8 @@ interface AppState {
   cameraMode: CameraMode;
   /** Mobile: Whether the control panel is expanded */
   isControlsExpanded: boolean;
+  /** Galactic motion mode - Sun moves forward, planets form helical paths */
+  galacticMotion: boolean;
 
   selectBody: (body: CelestialBody | null) => void;
   setTimeScale: (scale: number) => void;
@@ -33,6 +35,7 @@ interface AppState {
   toggleCameraMode: () => void;
   toggleControlsExpanded: () => void;
   setControlsExpanded: (expanded: boolean) => void;
+  toggleGalacticMotion: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -44,6 +47,7 @@ export const useStore = create<AppState>((set) => ({
   showAsteroids: true,
   cameraMode: "orbit",
   isControlsExpanded: false,
+  galacticMotion: false,
 
   selectBody: (body) => set({ selectedBody: body }),
   setTimeScale: (scale) => set({ timeScale: scale }),
@@ -61,4 +65,6 @@ export const useStore = create<AppState>((set) => ({
   toggleControlsExpanded: () =>
     set((state) => ({ isControlsExpanded: !state.isControlsExpanded })),
   setControlsExpanded: (expanded) => set({ isControlsExpanded: expanded }),
+  toggleGalacticMotion: () =>
+    set((state) => ({ galacticMotion: !state.galacticMotion })),
 }));
