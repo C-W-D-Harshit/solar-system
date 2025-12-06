@@ -28,9 +28,17 @@ interface SunProps {
 export function Sun({ data, sunPositionRef }: SunProps) {
   const meshRef = useRef<Mesh>(null);
   const groupRef = useRef<Group>(null);
-  
+
   /** Select only the action function - stable reference, won't cause re-renders */
   const selectBody = useStore((state) => state.selectBody);
+
+  /** Get galactic motion state for reactive scaling */
+  const galacticMotion = useStore((state) => state.galacticMotion);
+  const timeScale = useStore((state) => state.timeScale);
+
+  /** Scale Sun in galactic mode based on speed for visibility */
+  /** More conservative scaling: at 20x = ~2x size, at 50x = ~2.8x size */
+  const sunScale = galacticMotion ? 1 + Math.pow(timeScale, 0.4) * 0.3 : 1;
 
   /** Load the sun texture from local assets */
   const texture = useTexture(data.textureUrl ?? "/textures/sun.jpg");
@@ -48,7 +56,7 @@ export function Sun({ data, sunPositionRef }: SunProps) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={sunScale}>
       {/* Main sun sphere with texture */}
       <mesh
         ref={meshRef}

@@ -116,8 +116,8 @@ export function AsteroidBelt({ timeRef, sunPositionRef }: AsteroidBeltProps) {
       const radius = 42 + Math.random() * 10;
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius;
-      // Slight vertical spread
-      const y = (Math.random() - 0.5) * 3;
+      // Increased vertical spread for more 3D appearance
+      const y = (Math.random() - 0.5) * 6;
       
       /** Non-uniform scaling creates irregular rocky shapes */
       const baseScale = 0.1 + Math.random() * 0.25;
@@ -157,14 +157,29 @@ export function AsteroidBelt({ timeRef, sunPositionRef }: AsteroidBeltProps) {
 
   /** Rotate the entire belt slowly and follow Sun's position */
   useFrame(() => {
+    const galacticMotion = useStore.getState().galacticMotion;
+
     /** Update group position to follow Sun */
     if (groupRef.current) {
       groupRef.current.position.copy(sunPositionRef.current);
+
+      /** In galactic mode, rotate belt 90° to align with X-Y orbital plane */
+      if (galacticMotion) {
+        groupRef.current.rotation.x = Math.PI / 2;
+      } else {
+        groupRef.current.rotation.x = 0;
+      }
     }
-    
+
     if (!meshRef.current || !showAsteroids) return;
     const time = timeRef.current;
-    meshRef.current.rotation.y = time * 0.01;
+
+    /** Rotate around appropriate axis based on mode */
+    if (galacticMotion) {
+      meshRef.current.rotation.z = time * 0.01; // Rotate in X-Y plane
+    } else {
+      meshRef.current.rotation.y = time * 0.01; // Rotate in X-Z plane
+    }
   });
 
   if (!showAsteroids) return null;

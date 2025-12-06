@@ -28,6 +28,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 14,
     orbitSpeed: 0.02, // Fast
     rotationSpeed: 0.005,
+    inclination: 2, // Visual height offset for 3D galactic view
     color: "#A5A5A5",
     textureUrl: "/textures/mercury.jpg",
     description:
@@ -48,6 +49,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 20,
     orbitSpeed: 0.015,
     rotationSpeed: 0.002,
+    inclination: 4, // Visual height offset for 3D galactic view
     color: "#E3BB76",
     textureUrl: "/textures/venus.jpg",
     description:
@@ -68,6 +70,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 28,
     orbitSpeed: 0.01,
     rotationSpeed: 0.02,
+    inclination: 6, // Visual height offset for 3D galactic view
     color: "#22A6B3",
     textureUrl: "/textures/earth.jpg",
     description:
@@ -88,6 +91,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 38,
     orbitSpeed: 0.008,
     rotationSpeed: 0.018,
+    inclination: 8, // Visual height offset for 3D galactic view
     color: "#E05242",
     textureUrl: "/textures/mars.jpg",
     description:
@@ -108,6 +112,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 58,
     orbitSpeed: 0.004,
     rotationSpeed: 0.05, // Fast rotation
+    inclination: 12, // Visual height offset for 3D galactic view
     color: "#D4A373",
     textureUrl: "/textures/jupiter.jpg",
     description:
@@ -128,6 +133,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 78,
     orbitSpeed: 0.003,
     rotationSpeed: 0.045,
+    inclination: 16, // Visual height offset for 3D galactic view
     color: "#EAD6B8",
     textureUrl: "/textures/saturn.jpg",
     ringColor: "#C5B399",
@@ -149,6 +155,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 96,
     orbitSpeed: 0.002,
     rotationSpeed: 0.03,
+    inclination: 20, // Visual height offset for 3D galactic view
     color: "#D1F4FA",
     textureUrl: "/textures/uranus.jpg",
     ringColor: "#FFFFFF",
@@ -169,6 +176,7 @@ export const solarSystemData: CelestialBody[] = [
     distance: 112,
     orbitSpeed: 0.0015,
     rotationSpeed: 0.032,
+    inclination: 24, // Visual height offset for 3D galactic view
     color: "#5B5DDF",
     textureUrl: "/textures/neptune.jpg",
     description: "The farthest known planet, a dense and windy ice giant.",

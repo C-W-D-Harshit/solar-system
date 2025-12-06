@@ -6,6 +6,7 @@ export interface CelestialBody {
   distance: number; // Distance from parent (Sun for planets)
   orbitSpeed: number; // Radians per frame or relative factor
   rotationSpeed: number; // Radians per frame
+  inclination?: number; // Orbital inclination in radians (for 3D positioning)
   color: string;
   textureUrl?: string; // URL to the texture image
   ringColor?: string; // For Saturn/Uranus

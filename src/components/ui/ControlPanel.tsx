@@ -60,8 +60,8 @@ export function ControlPanel() {
               <input
                 type="range"
                 min="0"
-                max="5"
-                step="0.1"
+                max="50"
+                step="0.5"
                 value={timeScale}
                 onChange={(e) => setTimeScale(parseFloat(e.target.value))}
                 className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer touch-pan-x [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
@@ -195,8 +195,8 @@ export function ControlPanel() {
         <input
           type="range"
           min="0"
-          max="5"
-          step="0.1"
+          max="50"
+          step="0.5"
           value={timeScale}
           onChange={(e) => setTimeScale(parseFloat(e.target.value))}
           className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 transition-all"

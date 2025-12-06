@@ -297,12 +297,40 @@ export function CameraController({ timeRef, sunPositionRef }: CameraControllerPr
       }
     } else {
       /** If nothing selected, follow the Sun's position (galactic motion center) */
+      const galacticMotion = useStore.getState().galacticMotion;
       const targetPosition = sunPositionRef.current.clone();
-      const lerpFactor = 2 * delta;
+
+      /** In galactic mode, follow Sun much faster to keep it in view */
+      const lerpFactor = galacticMotion ? Math.min(0.98, 15 * delta) : 2 * delta;
       currentTarget.current.lerp(targetPosition, lerpFactor);
 
       if (orbitControls) {
         orbitControls.target.copy(currentTarget.current);
+
+        /** In galactic motion, offset camera to view from the side/above to see spirals */
+        if (galacticMotion) {
+          /** Position camera to see X-Y plane spirals extending in Z direction */
+          /** Camera distance scales moderately with speed since planets also scale up */
+          const timeScale = useStore.getState().timeScale;
+
+          /** Base camera distance, scaled by speed to match planet scaling */
+          /** At 20x = ~140 units, at 50x = ~177 units */
+          const scaleFactor = Math.pow(timeScale, 0.4);
+          const baseDistance = 70;
+          const distance = baseDistance * scaleFactor;
+
+          const cameraOffset = new Vector3(
+            distance * 0.8,  // X: to the side
+            distance * 0.55, // Y: above to see stacking
+            distance * 0.75  // Z: forward to see spirals
+          );
+          const idealCameraPos = sunPositionRef.current.clone().add(cameraOffset);
+
+          /** Follow faster to keep Sun in view even at high speeds */
+          const followSpeed = Math.min(0.98, 15 * delta);
+          camera.position.lerp(idealCameraPos, followSpeed * delta);
+        }
+
         orbitControls.update();
       }
     }

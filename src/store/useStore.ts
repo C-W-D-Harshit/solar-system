@@ -40,7 +40,7 @@ interface AppState {
 
 export const useStore = create<AppState>((set) => ({
   selectedBody: null,
-  timeScale: 1,
+  timeScale: 20,
   isPlaying: true,
   showOrbits: true,
   showLabels: true,

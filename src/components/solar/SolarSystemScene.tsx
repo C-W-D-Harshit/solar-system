@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { Sun } from "./Sun";
@@ -17,11 +17,11 @@ const GALACTIC_DIRECTION = new Vector3(0, 0, 1).normalize();
 
 /**
  * SolarSystemScene - Main scene containing all celestial bodies
- * 
+ *
  * Performance optimizations:
  * - OrbitLines: Centralized orbit rendering with GPU-efficient LineLoop
  * - Memoized planet data iteration
- * 
+ *
  * Galactic Motion Mode:
  * - Sun moves forward along a fixed vector
  * - All planets follow Sun's position while continuing to orbit
@@ -33,19 +33,33 @@ export function SolarSystemScene() {
   const timeScale = useStore((state) => state.timeScale);
   const galacticMotion = useStore((state) => state.galacticMotion);
   const timeRef = useRef(0);
-  
+
   /** Sun's current position - shared across all child components */
   const sunPositionRef = useRef(new Vector3(0, 0, 0));
+
+  /** Handle galactic motion mode changes */
+  useEffect(() => {
+    if (galacticMotion) {
+      /** When entering galactic mode, advance time by 5 complete orbits */
+      /** This creates visible spiral trails from the start */
+      timeRef.current += Math.PI * 100; // 5 full orbits = 50π radians
+    } else {
+      /** Reset Sun position when exiting galactic motion mode */
+      sunPositionRef.current.set(0, 0, 0);
+    }
+  }, [galacticMotion]);
 
   /** Update simulation time and Sun position */
   useFrame((_, delta) => {
     if (isPlaying) {
-      timeRef.current += delta * timeScale;
-      
+      /** In galactic mode, double the speed for better visual effect */
+      const effectiveTimeScale = galacticMotion ? timeScale * 2 : timeScale;
+      timeRef.current += delta * effectiveTimeScale;
+
       /** Update Sun's position when galactic motion is enabled */
       if (galacticMotion) {
         const movement = GALACTIC_DIRECTION.clone().multiplyScalar(
-          delta * timeScale * GALACTIC_MOTION_SPEED
+          delta * effectiveTimeScale * GALACTIC_MOTION_SPEED
         );
         sunPositionRef.current.add(movement);
       }
@@ -56,31 +70,27 @@ export function SolarSystemScene() {
     <group>
       {/* Camera controller */}
       <CameraController timeRef={timeRef} sunPositionRef={sunPositionRef} />
-      
+
       {/* Centralized orbit lines - single batch render */}
-      <OrbitLines sunPositionRef={sunPositionRef} />
-      
+      <OrbitLines sunPositionRef={sunPositionRef} timeRef={timeRef} />
+
       {/* Celestial bodies */}
       {solarSystemData.map((body) => {
         if (body.type === "star") {
           return (
-            <Sun 
-              key={body.id} 
-              data={body} 
-              sunPositionRef={sunPositionRef}
-            />
+            <Sun key={body.id} data={body} sunPositionRef={sunPositionRef} />
           );
         }
         return (
-          <Planet 
-            key={body.id} 
-            data={body} 
-            timeRef={timeRef} 
+          <Planet
+            key={body.id}
+            data={body}
+            timeRef={timeRef}
             sunPositionRef={sunPositionRef}
           />
         );
       })}
-      
+
       {/* Asteroid belt with instanced rendering */}
       <AsteroidBelt timeRef={timeRef} sunPositionRef={sunPositionRef} />
     </group>

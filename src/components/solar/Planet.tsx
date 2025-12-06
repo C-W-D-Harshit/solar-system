@@ -116,17 +116,38 @@ export function Planet({ data, timeRef, sunPositionRef }: PlanetProps) {
   /** Calculate geometry segments once based on planet size */
   const segments = useMemo(() => getGeometrySegments(data.radius), [data.radius]);
 
+  /** Get galactic motion state for reactive scaling */
+  const galacticMotion = useStore((state) => state.galacticMotion);
+  const timeScale = useStore((state) => state.timeScale);
+
+  /** Scale planets in galactic mode based on speed for visibility */
+  /** More conservative scaling: at 20x = ~2x size, at 50x = ~2.8x size */
+  const planetScale = galacticMotion ? 1 + Math.pow(timeScale, 0.4) * 0.3 : 1;
+
   useFrame((_state, delta) => {
     const time = timeRef.current;
     const angle = time * data.orbitSpeed;
-    
-    /** Calculate orbital position relative to Sun */
-    const orbitalX = Math.cos(angle) * data.distance;
-    const orbitalZ = Math.sin(angle) * data.distance;
-    
+
+    const galacticMotion = useStore.getState().galacticMotion;
+    const heightOffset = data.inclination ?? 0;
+
+    let orbitalX, orbitalY, orbitalZ;
+
+    if (galacticMotion) {
+      /** In galactic mode: orbit in X-Y plane at height offset, Z stays at 0 */
+      orbitalX = Math.cos(angle) * data.distance;
+      orbitalY = Math.sin(angle) * data.distance + heightOffset;
+      orbitalZ = 0;
+    } else {
+      /** In normal mode: orbit in X-Z plane at Y=0 */
+      orbitalX = Math.cos(angle) * data.distance;
+      orbitalY = 0;
+      orbitalZ = Math.sin(angle) * data.distance;
+    }
+
     /** Add Sun's position for galactic motion (creates helical path) */
     const worldX = orbitalX + sunPositionRef.current.x;
-    const worldY = sunPositionRef.current.y;
+    const worldY = orbitalY + sunPositionRef.current.y;
     const worldZ = orbitalZ + sunPositionRef.current.z;
 
     if (groupRef.current) {
@@ -138,7 +159,7 @@ export function Planet({ data, timeRef, sunPositionRef }: PlanetProps) {
   });
 
   return (
-    <group ref={groupRef} position={[data.distance, 0, 0]}>
+    <group ref={groupRef} position={[data.distance, 0, 0]} scale={planetScale}>
       {/* Planet sphere with optimized geometry */}
       <mesh
         ref={meshRef}
