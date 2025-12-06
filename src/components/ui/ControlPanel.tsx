@@ -7,7 +7,6 @@ import {
   Move3d,
   MousePointer2,
   Settings,
-  ChevronUp,
   ChevronDown,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
@@ -147,7 +146,9 @@ export function ControlPanel() {
           <button
             onClick={toggleControlsExpanded}
             className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all"
-            aria-label={isControlsExpanded ? "Collapse controls" : "Expand controls"}
+            aria-label={
+              isControlsExpanded ? "Collapse controls" : "Expand controls"
+            }
           >
             {isControlsExpanded ? (
               <ChevronDown size={24} className="text-white" />
@@ -311,9 +312,7 @@ function QuickToggleButton({
     <button
       onClick={onClick}
       className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-95 ${
-        active
-          ? "bg-blue-500/20 text-blue-400"
-          : "bg-white/5 text-white/40"
+        active ? "bg-blue-500/20 text-blue-400" : "bg-white/5 text-white/40"
       }`}
     >
       {icon}
