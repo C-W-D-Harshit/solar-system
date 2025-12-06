@@ -40,9 +40,9 @@ export function SolarSystemScene() {
   /** Handle galactic motion mode changes */
   useEffect(() => {
     if (galacticMotion) {
-      /** When entering galactic mode, advance time by 5 complete orbits */
+      /** When entering galactic mode, advance time by 15 complete orbits */
       /** This creates visible spiral trails from the start */
-      timeRef.current += Math.PI * 100; // 5 full orbits = 50π radians
+      timeRef.current += Math.PI * 150; // 15 full orbits = 150π radians
     } else {
       /** Reset Sun position when exiting galactic motion mode */
       sunPositionRef.current.set(0, 0, 0);
