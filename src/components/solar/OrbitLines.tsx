@@ -11,18 +11,16 @@ import {
 } from "three";
 import { useStore } from "../../store/useStore";
 import { solarSystemData } from "../../data/solarSystem";
+import {
+  GALACTIC_MOTION_SPEED,
+  HELIX_TURNS,
+} from "../../constants/galacticMotion";
 
 /**
  * Number of segments for orbit circles
  * 64 provides smooth curves while being GPU-efficient
  */
 const ORBIT_SEGMENTS = 64;
-
-/** Galactic motion speed - must match SolarSystemScene.tsx */
-const GALACTIC_MOTION_SPEED = 5;
-
-/** Number of complete helix turns to show in galactic motion mode */
-const HELIX_TURNS = 5;
 
 interface OrbitLinesProps {
   /** Reference to the Sun's current world position (for galactic motion) */

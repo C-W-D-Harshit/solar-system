@@ -8,9 +8,11 @@ import { CameraController } from "./CameraController";
 import { OrbitLines } from "./OrbitLines";
 import { solarSystemData } from "../../data/solarSystem";
 import { useStore } from "../../store/useStore";
-
-/** Galactic motion speed - how fast the Sun moves forward */
-const GALACTIC_MOTION_SPEED = 5;
+import {
+  GALACTIC_MOTION_SPEED,
+  INITIAL_ORBIT_ADVANCE,
+  GALACTIC_SPEED_MULTIPLIER,
+} from "../../constants/galacticMotion";
 
 /** Fixed direction vector for galactic motion (normalized) */
 const GALACTIC_DIRECTION = new Vector3(0, 0, 1).normalize();
@@ -40,28 +42,33 @@ export function SolarSystemScene() {
   /** Handle galactic motion mode changes */
   useEffect(() => {
     if (galacticMotion) {
-      /** When entering galactic mode, advance time by 15 complete orbits */
+      /** When entering galactic mode, advance time by initial orbits */
       /** This creates visible spiral trails from the start */
-      timeRef.current += Math.PI * 150; // 15 full orbits = 150π radians
+      timeRef.current += Math.PI * 2 * INITIAL_ORBIT_ADVANCE;
     } else {
       /** Reset Sun position when exiting galactic motion mode */
       sunPositionRef.current.set(0, 0, 0);
     }
   }, [galacticMotion]);
 
+  /** Reusable scratch vector to avoid allocations in hot path */
+  const scratchVector = useRef(new Vector3());
+
   /** Update simulation time and Sun position */
   useFrame((_, delta) => {
     if (isPlaying) {
-      /** In galactic mode, double the speed for better visual effect */
-      const effectiveTimeScale = galacticMotion ? timeScale * 2 : timeScale;
+      /** In galactic mode, apply speed multiplier for better visual effect */
+      const effectiveTimeScale = galacticMotion
+        ? timeScale * GALACTIC_SPEED_MULTIPLIER
+        : timeScale;
       timeRef.current += delta * effectiveTimeScale;
 
       /** Update Sun's position when galactic motion is enabled */
       if (galacticMotion) {
-        const movement = GALACTIC_DIRECTION.clone().multiplyScalar(
-          delta * effectiveTimeScale * GALACTIC_MOTION_SPEED
-        );
-        sunPositionRef.current.add(movement);
+        scratchVector.current
+          .copy(GALACTIC_DIRECTION)
+          .multiplyScalar(delta * effectiveTimeScale * GALACTIC_MOTION_SPEED);
+        sunPositionRef.current.add(scratchVector.current);
       }
     }
   });
