@@ -9,6 +9,7 @@ export interface CelestialBody {
   color: string;
   textureUrl?: string; // URL to the texture image
   ringColor?: string; // For Saturn/Uranus
+  ringTextureUrl?: string; // URL to ring texture image
   description: string;
 
   // Display data

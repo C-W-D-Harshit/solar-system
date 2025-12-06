@@ -131,6 +131,7 @@ export const solarSystemData: CelestialBody[] = [
     color: "#EAD6B8",
     textureUrl: "/textures/saturn.jpg",
     ringColor: "#C5B399",
+    ringTextureUrl: "/textures/saturn_ring.png",
     description: "Gas giant famous for its prominent ring system.",
     details: {
       diameter: "116,460 km",

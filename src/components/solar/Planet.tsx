@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, Group, DoubleSide } from "three";
+import { Mesh, Group, DoubleSide, RepeatWrapping } from "three";
 import { Html, useTexture } from "@react-three/drei";
 import type { CelestialBody } from "../../types";
 import { useStore } from "../../store/useStore";
@@ -22,6 +22,65 @@ function getGeometrySegments(radius: number): number {
   if (radius >= 3) return 48;      // Large planets (Jupiter, Saturn)
   if (radius >= 1.5) return 32;    // Medium planets (Uranus, Neptune)
   return 24;                        // Small planets (Mercury, Venus, Earth, Mars)
+}
+
+/**
+ * PlanetRing - Renders a textured ring for planets like Saturn
+ * Separated to properly handle conditional texture loading
+ */
+interface PlanetRingProps {
+  radius: number;
+  ringTextureUrl?: string;
+}
+
+function PlanetRing({ radius, ringTextureUrl }: PlanetRingProps) {
+  /** Load ring texture if available */
+  const ringTexture = useTexture(ringTextureUrl ?? "/textures/saturn_ring.png");
+
+  /** Configure texture for radial ring mapping */
+  useMemo(() => {
+    if (ringTexture) {
+      ringTexture.wrapS = RepeatWrapping;
+      ringTexture.wrapT = RepeatWrapping;
+    }
+  }, [ringTexture]);
+
+  return (
+    <mesh rotation={[-Math.PI / 2.5, 0, 0]}>
+      <ringGeometry args={[radius * 1.4, radius * 2.4, 64]} />
+      <meshBasicMaterial
+        map={ringTexture}
+        color="#ffffff"
+        opacity={0.9}
+        transparent
+        side={DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+/**
+ * Simple colored ring fallback when no texture is available
+ */
+interface SimpleRingProps {
+  radius: number;
+  ringColor: string;
+}
+
+function SimpleRing({ radius, ringColor }: SimpleRingProps) {
+  return (
+    <mesh rotation={[-Math.PI / 2.5, 0, 0]}>
+      <ringGeometry args={[radius * 1.4, radius * 2.2, 32]} />
+      <meshBasicMaterial
+        color={ringColor}
+        opacity={0.7}
+        transparent
+        side={DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
 }
 
 /**
@@ -84,18 +143,18 @@ export function Planet({ data, timeRef }: PlanetProps) {
         />
       </mesh>
 
-      {/* Rings for Saturn/Uranus - using BasicMaterial for performance */}
-      {data.ringColor && (
-        <mesh rotation={[-Math.PI / 2.5, 0, 0]}>
-          <ringGeometry args={[data.radius * 1.4, data.radius * 2.2, 32]} />
-          <meshBasicMaterial
-            color={data.ringColor}
-            opacity={0.7}
-            transparent
-            side={DoubleSide}
-            depthWrite={false}
-          />
-        </mesh>
+      {/* Rings for Saturn/Uranus - textured when available */}
+      {data.ringColor && data.ringTextureUrl && (
+        <PlanetRing
+          radius={data.radius}
+          ringTextureUrl={data.ringTextureUrl}
+        />
+      )}
+      {data.ringColor && !data.ringTextureUrl && (
+        <SimpleRing
+          radius={data.radius}
+          ringColor={data.ringColor}
+        />
       )}
 
       {/* Labels rendered via HTML overlay */}
